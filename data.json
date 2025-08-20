@@ -1,8 +1,8 @@
 {
   "universities": [
     {
-      "name": "University of Dhaka",
-      "image": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1200&auto=format&fit=crop",
+      "name": "University of Rajshahi",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRph2xUbavcdXGZXs3kvQ7xEbUrS4Cpepx7ljNzazd7VNiQqXpABzRjiE5H&s=10",
       "second_time": true,
       "minimum_gpa": 9.0,
       "unit": "A",
