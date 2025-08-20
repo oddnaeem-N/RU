@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>University Cards</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="wrap">
-    <div class="grid" id="card-container">
-      <!-- JS দিয়ে ডেটা আসবে -->
-    </div>
+    <div class="grid" id="card-container"></div>
   </div>
 
   <script>
@@ -23,14 +21,11 @@
         const card = document.createElement("article");
         card.className = "card";
         card.innerHTML = `
-          <img class="media" src="${u.image}" alt="${u.name}">
           <div class="content">
-            <h3 class="title">
-              ${u.name}
-              <span class="badge ${u.second_time ? 'ok' : 'no'}">
-                ${u.second_time ? '✅ Second Time' : '❌ Second Time'}
-              </span>
-            </h3>
+            <h2 class="title">${u.name}</h2>
+            <span class="badge ${u.second_time ? 'ok' : 'no'}">
+              ${u.second_time ? '✅ Second Time' : '❌ Second Time'}
+            </span>
             <ul class="list">
               <li class="kv"><span class="k">Minimum GPA</span><span>${u.minimum_gpa}</span></li>
               <li class="kv"><span class="k">Unit</span><span>${u.unit}</span></li>
@@ -47,6 +42,7 @@
         container.appendChild(card);
       });
     }
+
     loadCards();
   </script>
 </body>
