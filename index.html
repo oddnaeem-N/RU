@@ -1,49 +1,112 @@
 <!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>University Cards</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div class="wrap">
-    <div class="grid" id="card-container"></div>
-  </div>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distraction Cards</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
 
-  <script>
-    async function loadCards() {
-      const container = document.getElementById("card-container");
-      const res = await fetch("data.json");
-      const data = await res.json();
+      .card {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        padding: 40px 60px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-size: 1.5em;
+        min-width: 250px;
+        position: relative;
+      }
 
-      data.universities.forEach(u => {
-        const card = document.createElement("article");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="content">
-            <h2 class="title">${u.name}</h2>
-            <span class="badge ${u.second_time ? 'ok' : 'no'}">
-              ${u.second_time ? '✅ Second Time' : '❌ Second Time'}
-            </span>
-            <ul class="list">
-              <li class="kv"><span class="k">Minimum GPA</span><span>${u.minimum_gpa}</span></li>
-              <li class="kv"><span class="k">Unit</span><span>${u.unit}</span></li>
-              <li>
-                <div class="k">Subjects</div>
-                <div class="chips">
-                  ${u.subjects.map(s => `<span class="chip">${s}</span>`).join("")}
-                </div>
-              </li>
-            </ul>
-            <a class="link" href="${u.website}" target="_blank" rel="noopener">Details</a>
-          </div>
-        `;
-        container.appendChild(card);
+      .completed::after {
+        content: "✔";
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 1.5em;
+        color: green;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 20px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        background: #007bff;
+        color: white;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card" id="card"></div>
+    <div class="buttons">
+      <button id="prev">Previous</button>
+      <button id="tick">✔ Overcome</button>
+      <button id="next">Next</button>
+    </div>
+    <script>
+      const distractions = ["ফেসবুক"];
+      const cardEl = document.getElementById('card');
+      const prevBtn = document.getElementById('prev');
+      const nextBtn = document.getElementById('next');
+      const tickBtn = document.getElementById('tick');
+      // লোকালস্টোরেজ রিসেট ডেইলি
+      const today = new Date().toISOString().split('T')[0];
+      const savedDate = localStorage.getItem('lastSavedDate');
+      if (savedDate !== today) {
+        localStorage.setItem('lastSavedDate', today);
+        localStorage.setItem('distractionsState', JSON.stringify({}));
+      }
+      let savedState = JSON.parse(localStorage.getItem('distractionsState')) || {};
+      let currentIndex = 0;
+
+      function showCard(index) {
+        const item = distractions[index];
+        cardEl.textContent = item;
+        cardEl.classList.toggle('completed', savedState[item]);
+      }
+
+      function saveState() {
+        localStorage.setItem('distractionsState', JSON.stringify(savedState));
+      }
+      // Initial render
+      showCard(currentIndex);
+      // Button events
+      prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) currentIndex--;
+        showCard(currentIndex);
       });
-    }
-
-    loadCards();
-  </script>
-</body>
+      nextBtn.addEventListener('click', () => {
+        if (currentIndex < distractions.length - 1) currentIndex++;
+        showCard(currentIndex);
+      });
+      tickBtn.addEventListener('click', () => {
+        const item = distractions[currentIndex];
+        savedState[item] = !savedState[item];
+        saveState();
+        showCard(currentIndex);
+      });
+    </script>
+  </body>
 </html>
