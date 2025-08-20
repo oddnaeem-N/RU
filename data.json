@@ -1,31 +1,100 @@
 {
   "universities": [
     {
-      "name": "University of Rajshahi",
-      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRph2xUbavcdXGZXs3kvQ7xEbUrS4Cpepx7ljNzazd7VNiQqXpABzRjiE5H&s=10",
+      "name": "Rajshahi University",
       "second_time": true,
-      "minimum_gpa": 9.0,
-      "unit": "A",
-      "subjects": ["Bangla", "English", "General Knowledge"],
-      "website": "https://admission.eis.du.ac.bd"
+      "units": [
+        {
+          "unit": "A",
+          "minimum_gpa": 3.50,
+          "total_gpa": 7.50,
+          "subjects": ["Physics", "Mathematics", "Chemistry"]
+        },
+        {
+          "unit": "B",
+          "minimum_gpa": 3.00,
+          "total_gpa": 7.00,
+          "subjects": ["Bengali", "English", "General Knowledge"]
+        },
+        {
+          "unit": "C",
+          "minimum_gpa": 3.50,
+          "total_gpa": 7.50,
+          "subjects": ["Mathematics", "Accounting", "Economics"]
+        }
+      ]
     },
     {
-      "name": "BUET",
-      "image": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1200&auto=format&fit=crop",
-      "second_time": false,
-      "minimum_gpa": 9.0,
-      "unit": "B",
-      "subjects": ["Math", "Physics", "Chemistry", "English"],
-      "website": "https://ugadmission.buet.ac.bd"
+      "name": "Jahangirnagar University",
+      "second_time": true,
+      "units": [
+        {
+          "unit": "A",
+          "minimum_gpa": 3.50,
+          "total_gpa": 7.50,
+          "subjects": ["Physics", "Mathematics"]
+        },
+        {
+          "unit": "B",
+          "minimum_gpa": 3.00,
+          "total_gpa": 7.00,
+          "subjects": ["Bengali", "English"]
+        },
+        {
+          "unit": "C",
+          "minimum_gpa": 3.50,
+          "total_gpa": 7.50,
+          "subjects": ["Mathematics", "Accounting"]
+        }
+      ]
     },
     {
-      "name": "Medical College",
-      "image": "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1200&auto=format&fit=crop",
+      "name": "Chittagong University",
       "second_time": true,
-      "minimum_gpa": 9.0,
-      "unit": "C",
-      "subjects": ["Biology", "Chemistry", "Physics", "English"],
-      "website": "https://dghs.gov.bd"
+      "units": [
+        {
+          "unit": "A",
+          "minimum_gpa": 3.50,
+          "total_gpa": 7.50,
+          "subjects": ["Physics", "Mathematics"]
+        },
+        {
+          "unit": "B",
+          "minimum_gpa": 3.00,
+          "total_gpa": 7.00,
+          "subjects": ["Bengali", "English"]
+        },
+        {
+          "unit": "C",
+          "minimum_gpa": 3.50,
+          "total_gpa": 7.50,
+          "subjects": ["Mathematics", "Accounting"]
+        }
+      ]
+    },
+    {
+      "name": "Haji Mohammad Danesh Science and Technology University (HSTU)",
+      "second_time": true,
+      "units": [
+        {
+          "unit": "O",
+          "minimum_gpa": 3.50,
+          "total_gpa": 8.00,
+          "subjects": ["Physics", "Mathematics"]
+        },
+        {
+          "unit": "A",
+          "minimum_gpa": 3.00,
+          "total_gpa": 6.50,
+          "subjects": ["Bengali", "English"]
+        },
+        {
+          "unit": "C",
+          "minimum_gpa": 3.00,
+          "total_gpa": 6.50,
+          "subjects": ["Mathematics", "Accounting"]
+        }
+      ]
     }
   ]
 }
