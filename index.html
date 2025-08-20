@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>University Cards</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="grid" id="card-container">
+      <!-- JS দিয়ে ডেটা আসবে -->
+    </div>
+  </div>
+
+  <script>
+    async function loadCards() {
+      const container = document.getElementById("card-container");
+      const res = await fetch("data.json");
+      const data = await res.json();
+
+      data.universities.forEach(u => {
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <img class="media" src="${u.image}" alt="${u.name}">
+          <div class="content">
+            <h3 class="title">
+              ${u.name}
+              <span class="badge ${u.second_time ? 'ok' : 'no'}">
+                ${u.second_time ? '✅ Second Time' : '❌ Second Time'}
+              </span>
+            </h3>
+            <ul class="list">
+              <li class="kv"><span class="k">Minimum GPA</span><span>${u.minimum_gpa}</span></li>
+              <li class="kv"><span class="k">Unit</span><span>${u.unit}</span></li>
+              <li>
+                <div class="k">Subjects</div>
+                <div class="chips">
+                  ${u.subjects.map(s => `<span class="chip">${s}</span>`).join("")}
+                </div>
+              </li>
+            </ul>
+            <a class="link" href="${u.website}" target="_blank" rel="noopener">Details</a>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    loadCards();
+  </script>
+</body>
+</html>
