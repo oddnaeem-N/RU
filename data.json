@@ -1,0 +1,31 @@
+{
+  "universities": [
+    {
+      "name": "University of Dhaka",
+      "image": "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?q=80&w=1200&auto=format&fit=crop",
+      "second_time": true,
+      "minimum_gpa": 9.0,
+      "unit": "A",
+      "subjects": ["Bangla", "English", "General Knowledge"],
+      "website": "https://admission.eis.du.ac.bd"
+    },
+    {
+      "name": "BUET",
+      "image": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=1200&auto=format&fit=crop",
+      "second_time": false,
+      "minimum_gpa": 9.0,
+      "unit": "B",
+      "subjects": ["Math", "Physics", "Chemistry", "English"],
+      "website": "https://ugadmission.buet.ac.bd"
+    },
+    {
+      "name": "Medical College",
+      "image": "https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?q=80&w=1200&auto=format&fit=crop",
+      "second_time": true,
+      "minimum_gpa": 9.0,
+      "unit": "C",
+      "subjects": ["Biology", "Chemistry", "Physics", "English"],
+      "website": "https://dghs.gov.bd"
+    }
+  ]
+}
