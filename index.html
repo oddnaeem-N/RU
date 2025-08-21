@@ -1,112 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Distraction Cards</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f0f2f5;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        padding: 20px;
-      }
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ফ্ল্যাশকার্ড স্টাডি অ্যাপ</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+<h1>ফ্ল্যাশকার্ড স্টাডি অ্যাপ</h1>
 
-      .card {
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        padding: 40px 60px;
-        margin-bottom: 20px;
-        text-align: center;
-        font-size: 1.5em;
-        min-width: 250px;
-        position: relative;
-      }
+<div style="display:flex; justify-content:space-between;">
+<button id="addCardBtn" class="main-btn">Add Card</button>
+<button id="backupBtn" class="main-btn">Backup / Restore</button>
+<button id="textBackupBtn" class="main-btn">Text Backup</button>
+</div>
 
-      .completed::after {
-        content: "✅";
-        position: absolute;
-        top: 10px;
-        right: 15px;
-        font-size: 1.5em;
-        color: green;
-      }
+<div class="card">
+<h2 id="question"></h2>
+<p id="answer" style="display:none;"></p>
+<p id="explanation" style="display:none; font-style:italic;"></p>
+<p id="views"></p>
+<button id="showAnswer">Show Answer</button><br>
+<button id="prev">Previous</button>
+<button id="next">Next</button>
+<button id="editCard">Edit</button>
+<button id="deleteCard">Delete</button>
+<div class="progress-bar"><div id="progress-fill" class="progress-fill">0%</div></div>
+</div>
+</div>
 
-      .buttons {
-        display: flex;
-        gap: 20px;
-      }
+<div class="overlay" id="overlay"></div>
 
-      button {
-        padding: 10px 20px;
-        font-size: 1em;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        background: #007bff;
-        color: white;
-        transition: background 0.2s;
-      }
+<!-- Add/Edit Form -->
+<div class="form-popup" id="addForm">
+<h3>Add / Edit Card</h3>
+<input type="text" id="inputField" placeholder="প্রশ্ন/নিয়ম">
+<input type="text" id="answerField" placeholder="উত্তর">
+<input type="text" id="explanationField" placeholder="ব্যাখ্যা">
+<button onclick="addOrEditCard()">Save</button>
+<button onclick="closeForm()">Cancel</button>
+</div>
 
-      button:hover {
-        background: #0056b3;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="card" id="card"></div>
-    <div class="buttons">
-      <button id="prev">Previous</button>
-      <button id="tick">Overcome</button>
-      <button id="next">Next</button>
-    </div>
-    <script>
-      const distractions = ["অযাথা ফেসবুক ব্যবহার","অপ্রয়োজনীয় চ্যাটিং","অনেক বেশি ঘুম","চ্যাট জিপিটি"] ;
-      const cardEl = document.getElementById('card');
-      const prevBtn = document.getElementById('prev');
-      const nextBtn = document.getElementById('next');
-      const tickBtn = document.getElementById('tick');
-      // লোকালস্টোরেজ রিসেট ডেইলি
-      const today = new Date().toISOString().split('T')[0];
-      const savedDate = localStorage.getItem('lastSavedDate');
-      if (savedDate !== today) {
-        localStorage.setItem('lastSavedDate', today);
-        localStorage.setItem('distractionsState', JSON.stringify({}));
-      }
-      let savedState = JSON.parse(localStorage.getItem('distractionsState')) || {};
-      let currentIndex = 0;
+<!-- Backup / Restore JSON -->
+<div class="form-popup" id="backupForm">
+<h3>Backup / Restore JSON</h3>
+<button onclick="backupData()">Export Backup</button>
+<input type="file" id="importFile" accept=".json">
+<button onclick="importData()">Restore Backup</button>
+<button onclick="closeForm()">Close</button>
+</div>
 
-      function showCard(index) {
-        const item = distractions[index];
-        cardEl.textContent = item;
-        cardEl.classList.toggle('completed', savedState[item]);
-      }
+<!-- Backup / Restore Text -->
+<div class="form-popup" id="textBackupForm">
+<h3>Text Backup / Restore</h3>
+<button onclick="exportText()">Export as Text</button>
+<input type="file" id="importTextFile" accept=".txt">
+<button onclick="importText()">Restore from Text</button>
+<button onclick="closeForm()">Close</button>
+</div>
 
-      function saveState() {
-        localStorage.setItem('distractionsState', JSON.stringify(savedState));
-      }
-      // Initial render
-      showCard(currentIndex);
-      // Button events
-      prevBtn.addEventListener('click', () => {
-        if (currentIndex > 0) currentIndex--;
-        showCard(currentIndex);
-      });
-      nextBtn.addEventListener('click', () => {
-        if (currentIndex < distractions.length - 1) currentIndex++;
-        showCard(currentIndex);
-      });
-      tickBtn.addEventListener('click', () => {
-        const item = distractions[currentIndex];
-        savedState[item] = !savedState[item];
-        saveState();
-        showCard(currentIndex);
-      });
-    </script>
-  </body>
+<script src="script.js"></script>
+</body>
 </html>
