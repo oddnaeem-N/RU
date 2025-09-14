@@ -2,64 +2,180 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
+<title>MCQ Exam with Leaderboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ফ্ল্যাশকার্ড স্টাডি অ্যাপ</title>
-<link rel="stylesheet" href="style.css">
+<style>
+body { font-family: Arial; margin:0; padding:0; background:#f4f4f4; }
+.container { max-width: 600px; margin: 20px auto; padding: 20px; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+h2,h3{margin-top:0;}
+input, textarea, button { width: 100%; margin: 5px 0; padding: 10px; border-radius:4px; border:1px solid #ccc; }
+button { background:#4CAF50; color:#fff; border:none; cursor:pointer; }
+button:hover{background:#45a049;}
+.question-card { margin:15px 0; padding:10px; border:1px solid #ddd; border-radius:4px; }
+.option{display:block; margin:5px 0;}
+.hidden{display:none;}
+#timer { font-weight:bold; color:red; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px;}
+table, th, td { border: 1px solid #ddd; }
+th, td { padding: 8px; text-align: center; }
+@media (max-width: 500px) { .container { padding:15px; } }
+</style>
 </head>
 <body>
 <div class="container">
-<h1>ফ্ল্যাশকার্ড স্টাডি অ্যাপ</h1>
+<h2>📚 MCQ Exam System</h2>
 
-<div style="display:flex; justify-content:space-between;">
-<button id="addCardBtn" class="main-btn">Add Card</button>
-<button id="backupBtn" class="main-btn">Backup / Restore</button>
-<button id="textBackupBtn" class="main-btn">Text Backup</button>
+<!-- User Input -->
+<div id="userPanel">
+  <h3>Exam শুরু করার জন্য নাম লিখুন</h3>
+  <input type="text" id="userName" placeholder="তোমার নাম">
+  <button onclick="startExamWithName()">Start Exam</button>
 </div>
 
-<div class="card">
-<h2 id="question"></h2>
-<p id="answer" style="display:none;"></p>
-<p id="explanation" style="display:none; font-style:italic;"></p>
-<p id="views"></p>
-<button id="showAnswer">Show Answer</button><br>
-<button id="prev">Previous</button>
-<button id="next">Next</button>
-<button id="editCard">Edit</button>
-<button id="deleteCard">Delete</button>
-<div class="progress-bar"><div id="progress-fill" class="progress-fill">0%</div></div>
+<!-- Admin Panel -->
+<div id="adminPanel" class="hidden">
+<h3>প্রশ্ন যোগ/আপডেট করুন</h3>
+<input type="text" id="question" placeholder="প্রশ্ন লিখুন">
+<textarea id="options" placeholder="অপশনগুলো লিখুন (কমা দিয়ে আলাদা করুন)"></textarea>
+<input type="number" id="answer" placeholder="সঠিক অপশনের index (0 থেকে শুরু)">
+<input type="hidden" id="editIndex">
+<button onclick="saveQuestion()">Save Question</button>
+
+<h3>প্রশ্ন তালিকা</h3>
+<div id="questionList"></div>
+
+<h3>Backup / Restore</h3>
+<button onclick="exportData()">Export JSON</button>
+<input type="file" id="fileInput" onchange="importData(event)">
+
+<button onclick="showLeaderboard()">Show Leaderboard</button>
+</div>
+
+<!-- Exam Panel -->
+<div id="examPanel" class="hidden">
+<h3>পরীক্ষা চলছে <span id="timer">00:00</span></h3>
+<div id="examQuestion"></div>
+<button onclick="prevQ()">⬅ Prev</button>
+<button onclick="nextQ()">Next ➡</button>
+<button onclick="submitExam()">Submit</button>
+</div>
+
+<!-- Result Panel -->
+<div id="resultPanel" class="hidden">
+<h3>📊 Result</h3>
+<p>Name: <span id="userLabel"></span></p>
+<p>Correct: <span id="correctCount"></span></p>
+<p>Wrong: <span id="wrongCount"></span></p>
+<p>Skipped: <span id="skippedCount"></span></p>
+<canvas id="resultChart" width="400" height="400"></canvas>
+<button onclick="backToUser()">Back</button>
+<button onclick="showLeaderboard()">Leaderboard</button>
+</div>
+
+<!-- Leaderboard Panel -->
+<div id="leaderboardPanel" class="hidden">
+<h3>🏆 Leaderboard</h3>
+<table>
+<thead><tr><th>Rank</th><th>Name</th><th>Score</th><th>Date</th></tr></thead>
+<tbody id="leaderboardBody"></tbody>
+</table>
+<button onclick="backToUser()">Back</button>
 </div>
 </div>
 
-<div class="overlay" id="overlay"></div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let questions = JSON.parse(localStorage.getItem("mcqData")) || [];
+let leaderboard = JSON.parse(localStorage.getItem("mcqLeaderboard")) || [];
+let currentQ=0, answers=[], timer, timeLeft=60, currentUser="";
 
-<!-- Add/Edit Form -->
-<div class="form-popup" id="addForm">
-<h3>Add / Edit Card</h3>
-<input type="text" id="inputField" placeholder="প্রশ্ন/নিয়ম">
-<input type="text" id="answerField" placeholder="উত্তর">
-<input type="text" id="explanationField" placeholder="ব্যাখ্যা">
-<button onclick="addOrEditCard()">Save</button>
-<button onclick="closeForm()">Cancel</button>
-</div>
+// Admin functions
+function saveData(){ localStorage.setItem("mcqData",JSON.stringify(questions)); loadQuestions(); }
 
-<!-- Backup / Restore JSON -->
-<div class="form-popup" id="backupForm">
-<h3>Backup / Restore JSON</h3>
-<button onclick="backupData()">Export Backup</button>
-<input type="file" id="importFile" accept=".json">
-<button onclick="importData()">Restore Backup</button>
-<button onclick="closeForm()">Close</button>
-</div>
+function saveQuestion(){
+  const q=document.getElementById("question").value;
+  const opts=document.getElementById("options").value.split(",");
+  const ans=parseInt(document.getElementById("answer").value);
+  const editIndex=document.getElementById("editIndex").value;
+  if(!q||opts.length<2||isNaN(ans)){ alert("সব ফিল্ড পূরণ করুন!"); return; }
+  const newQ={q,options:opts,answer:ans};
+  if(editIndex!==""){ questions[editIndex]=newQ; document.getElementById("editIndex").value=""; }
+  else questions.push(newQ);
+  saveData(); clearForm();
+}
+function clearForm(){ document.getElementById("question").value=""; document.getElementById("options").value=""; document.getElementById("answer").value=""; }
+function editQuestion(i){ const q=questions[i]; document.getElementById("question").value=q.q; document.getElementById("options").value=q.options.join(","); document.getElementById("answer").value=q.answer; document.getElementById("editIndex").value=i; }
+function deleteQuestion(i){ if(confirm("Delete?")){ questions.splice(i,1); saveData(); } }
+function loadQuestions(){ const list=document.getElementById("questionList"); list.innerHTML=""; questions.forEach((q,i)=>{ const div=document.createElement("div"); div.classList.add("question-card"); div.innerHTML=`<b>${i+1}. ${q.q}</b><br>Options: ${q.options.join(", ")}<br>Answer: ${q.options[q.answer]}<br>
+<button onclick="editQuestion(${i})">Edit</button> <button onclick="deleteQuestion(${i})">Delete</button>`; list.appendChild(div); }); }
 
-<!-- Backup / Restore Text -->
-<div class="form-popup" id="textBackupForm">
-<h3>Text Backup / Restore</h3>
-<button onclick="exportText()">Export as Text</button>
-<input type="file" id="importTextFile" accept=".txt">
-<button onclick="importText()">Restore from Text</button>
-<button onclick="closeForm()">Close</button>
-</div>
+// Backup/Restore
+function exportData(){ const blob=new Blob([JSON.stringify(questions,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="mcq_backup.json"; a.click(); }
+function importData(e){ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=function(ev){ try{ questions=JSON.parse(ev.target.result); saveData(); alert("ডেটা ইমপোর্ট সফল!"); }catch(err){ alert("Invalid JSON file"); } }; reader.readAsText(file); }
 
-<script src="script.js"></script>
+// User Exam
+function startExamWithName(){
+  const name=document.getElementById("userName").value.trim();
+  if(!name){ alert("Name দিন"); return; }
+  currentUser=name;
+  document.getElementById("userPanel").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");
+}
+
+// Exam functions
+function startExam(){
+  if(questions.length===0){ alert("কোনো প্রশ্ন নেই!"); return; }
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("examPanel").classList.remove("hidden");
+  currentQ=0; answers=new Array(questions.length).fill(null);
+  timeLeft=questions.length*60; loadExamQ(); startTimer();
+}
+function loadExamQ(){ const q=questions[currentQ]; let c=document.getElementById("examQuestion"); c.innerHTML=`<h4>${currentQ+1}. ${q.q}</h4>`; q.options.forEach((opt,i)=>{ c.innerHTML+=`<label class="option"><input type="radio" name="q${currentQ}" value="${i}" ${answers[currentQ]===i?'checked':''}> ${opt}</label>`; }); }
+function saveAnswer(){ let sel=document.querySelector(`input[name="q${currentQ}"]:checked`); if(sel) answers[currentQ]=parseInt(sel.value); }
+function nextQ(){ saveAnswer(); if(currentQ<questions.length-1){currentQ++; loadExamQ();} }
+function prevQ(){ saveAnswer(); if(currentQ>0){currentQ--; loadExamQ();} }
+function submitExam(){
+  saveAnswer(); clearInterval(timer);
+  let correct=0,wrong=0,skipped=0;
+  answers.forEach((a,i)=>{ if(a===null) skipped++; else if(a===questions[i].answer) correct++; else wrong++; });
+  // Save leaderboard
+  leaderboard.push({name:currentUser, score:correct, total:questions.length, date:new Date().toLocaleString()});
+  leaderboard.sort((a,b)=>b.score-a.score);
+  localStorage.setItem("mcqLeaderboard",JSON.stringify(leaderboard));
+
+  document.getElementById("examPanel").classList.add("hidden");
+  document.getElementById("resultPanel").classList.remove("hidden");
+  document.getElementById("userLabel").innerText=currentUser;
+  document.getElementById("correctCount").innerText=correct;
+  document.getElementById("wrongCount").innerText=wrong;
+  document.getElementById("skippedCount").innerText=skipped;
+
+  // Chart
+  const ctx=document.getElementById('resultChart').getContext('2d');
+  new Chart(ctx,{ type:'pie', data:{ labels:['Correct','Wrong','Skipped'], datasets:[{data:[correct,wrong,skipped], backgroundColor:['#4CAF50','#F44336','#FFC107'] }] } });
+}
+
+// Timer
+function startTimer(){ updateTimer(); timer=setInterval(()=>{ timeLeft--; updateTimer(); if(timeLeft<=0) submitExam(); },1000); }
+function updateTimer(){ let m=Math.floor(timeLeft/60); let s=timeLeft%60; document.getElementById("timer").innerText=`${m}:${s<10?'0'+s:s}`; }
+
+// Leaderboard
+function showLeaderboard(){
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("resultPanel").classList.add("hidden");
+  document.getElementById("leaderboardPanel").classList.remove("hidden");
+  const tbody=document.getElementById("leaderboardBody"); tbody.innerHTML="";
+  leaderboard.forEach((l,i)=>{ tbody.innerHTML+=`<tr><td>${i+1}</td><td>${l.name}</td><td>${l.score}/${l.total}</td><td>${l.date}</td></tr>`; });
+}
+
+function backToUser(){
+  document.getElementById("adminPanel").classList.remove("hidden");
+  document.getElementById("examPanel").classList.add("hidden");
+  document.getElementById("resultPanel").classList.add("hidden");
+  document.getElementById("leaderboardPanel").classList.add("hidden");
+}
+
+loadQuestions();
+</script>
 </body>
 </html>
