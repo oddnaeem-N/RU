@@ -2,143 +2,261 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MCQ Exam App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MCQ অ্যাপ</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body{font-family:Arial;margin:0;padding:0;background:#f4f4f4;}
-.container{max-width:600px;margin:20px auto;padding:20px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-h2,h3{margin-top:0;}
-input,textarea,button{width:100%;margin:5px 0;padding:10px;border-radius:4px;border:1px solid #ccc;}
-button{background:#4CAF50;color:#fff;border:none;cursor:pointer;}
-button:hover{background:#45a049;}
-.question-card{margin:15px 0;padding:10px;border:1px solid #ddd;border-radius:4px;}
-.option{display:block;margin:5px 0;}
-.hidden{display:none;}
-#timer{font-weight:bold;color:red;}
-.tab{display:flex;justify-content:space-around;margin-bottom:10px;}
-.tab button{width:48%;}
+html, body {margin:0; padding:0; overflow-x:hidden; font-family:"Noto Sans Bengali",sans-serif; background:#f9f9f9;}
+.container{max-width:500px; margin:auto; padding:10px;}
+.card{width:100%; padding:20px; margin:25px 0; border-radius:12px; background:#fff; border:1px solid #ccc;}
+h4{margin-top:20px; margin-bottom:10px;}
+.option-btn{width:100%; margin-bottom:10px; font-size:18px; border-radius:8px; transition:0.2s;}
+.option-btn:hover{transform:scale(1.03);}
+.result{margin-top:15px; font-weight:600; font-size:18px;}
+.admin-panel{display:none; margin-top:10px;}
+textarea{font-family:monospace; width:100%;}
+@media(min-width:576px){.option-btn{font-size:20px;}}
 </style>
 </head>
 <body>
+
 <div class="container">
-<h2>📚 MCQ Exam System</h2>
+  <div class="d-flex justify-content-end mt-2 mb-2">
+    <button class="btn btn-primary me-2" onclick="showQuiz()">🎮 কুইজ</button>
+    <button class="btn btn-dark" onclick="showAdmin()">⚙️ অ্যাডমিন</button>
+  </div>
 
-<div class="tab">
-  <button onclick="showTab('exam')">Exam</button>
-  <button onclick="showTab('admin')">Admin</button>
+  <!-- Quiz Section -->
+  <div id="quizSection">
+    <div class="card text-center">
+      <div class="card-body">
+        <div>
+          <select id="categoryFilter" class="form-select mb-3" onchange="applyFilter()">
+            <option value="">সব ক্যাটাগরি</option>
+          </select>
+        </div>
+        <div id="question" class="mb-3" style="font-size:22px;">লোড হচ্ছে...</div>
+        <div id="options" class="d-grid gap-2">
+          <button class="btn btn-outline-primary option-btn" onclick="checkAnswer(this)"></button>
+          <button class="btn btn-outline-success option-btn" onclick="checkAnswer(this)"></button>
+          <button class="btn btn-outline-warning option-btn" onclick="checkAnswer(this)"></button>
+          <button class="btn btn-outline-danger option-btn" onclick="checkAnswer(this)"></button>
+        </div>
+        <div id="result" class="result"></div>
+        <button class="btn btn-secondary mt-3" onclick="nextQuestion()">পরের প্রশ্ন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" class="admin-panel">
+    <h4>📝 প্রশ্ন ও অপশন ম্যানেজমেন্ট</h4>
+
+    <!-- Option Management -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>প্রি-মেড অপশন তৈরি করুন</h5>
+        <input id="optionText" class="form-control mb-2" placeholder="নতুন অপশন">
+        <div class="d-grid"><button class="btn btn-success" onclick="addOption()">অপশন যোগ করুন</button></div>
+        <label class="mt-3">বিদ্যমান অপশন:</label>
+        <select id="existingOptions" class="form-select mb-2" size="5"></select>
+        <div class="d-grid"><button class="btn btn-danger" onclick="deleteOption()">ডিলিট অপশন</button></div>
+      </div>
+    </div>
+
+    <!-- Question Management -->
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5>প্রশ্ন যোগ করুন</h5>
+        <input id="questionText" class="form-control mb-2" placeholder="প্রশ্ন">
+        <input id="correctAnswer" class="form-control mb-2" placeholder="সঠিক উত্তর">
+        <label>ভুল অপশন সিলেক্ট করুন (৩টি):</label>
+        <select id="wrongOptions" class="form-select mb-2" multiple style="height:120px;"></select>
+        <input id="category" class="form-control mb-2" placeholder="ক্যাটাগরি">
+        <div class="d-grid"><button class="btn btn-primary" onclick="addQuestion()">প্রশ্ন যোগ করুন</button></div>
+      </div>
+    </div>
+
+    <!-- Question Table -->
+    <h4>প্রশ্ন তালিকা</h4>
+    <table class="table table-bordered" id="questionsTable">
+      <thead class="table-dark"><tr><th>#</th><th>প্রশ্ন</th><th>সঠিক উত্তর</th><th>ক্যাটাগরি</th><th>স্ট্রিক</th><th>অ্যাকশন</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- JSON Section -->
+    <h4>JSON কপি</h4>
+    <button class="btn btn-info mb-2" onclick="toggleJson()">📄 JSON দেখুন</button>
+    <div id="jsonBox" style="display:none;">
+      <textarea id="jsonView" rows="10" readonly></textarea>
+      <button class="btn btn-secondary mt-2" onclick="copyJson()">Copy JSON</button>
+    </div>
+  </div>
 </div>
 
-<!-- Exam Tab -->
-<div id="examTab">
-  <div id="userPanel">
-    <h3>Exam শুরু করার জন্য নাম লিখুন</h3>
-    <input type="text" id="userName" placeholder="তোমার নাম">
-    <button onclick="startExamWithName()">Start Exam</button>
-  </div>
-  <div id="examPanel" class="hidden">
-    <h3>পরীক্ষা চলছে <span id="timer">00:00</span></h3>
-    <div id="examQuestion"></div>
-    <button onclick="prevQ()">⬅ Prev</button>
-    <button onclick="nextQ()">Next ➡</button>
-    <button onclick="submitExam()">Submit</button>
-  </div>
-  <div id="resultPanel" class="hidden">
-    <h3>Result</h3>
-    <p>Name: <span id="userLabel"></span></p>
-    <p>Correct: <span id="correctCount"></span></p>
-    <p>Wrong: <span id="wrongCount"></span></p>
-    <p>Skipped: <span id="skippedCount"></span></p>
-    <canvas id="resultChart" width="400" height="400"></canvas>
-    <button onclick="backToUser()">Back</button>
-  </div>
-</div>
-
-<!-- Admin Tab -->
-<div id="adminTab" class="hidden">
-  <h3>Admin Login</h3>
-  <input type="text" id="adminUser" placeholder="Username">
-  <input type="password" id="adminPass" placeholder="Password">
-  <button onclick="loginAdmin()">Login</button>
-  <div id="adminPanel" class="hidden">
-    <h3>প্রশ্ন যোগ/আপডেট করুন</h3>
-    <input type="text" id="question" placeholder="প্রশ্ন লিখুন">
-    <textarea id="options" placeholder="অপশনগুলো লিখুন (কমা দিয়ে আলাদা করুন)"></textarea>
-    <input type="number" id="answer" placeholder="সঠিক অপশনের index (0 থেকে শুরু)">
-    <input type="hidden" id="editIndex">
-    <button onclick="saveQuestion()">Save Question</button>
-
-    <h3>প্রশ্ন তালিকা</h3>
-    <div id="questionList"></div>
-
-    <h3>Backup / Restore</h3>
-    <button onclick="exportData()">Export JSON</button>
-    <input type="file" id="fileInput" onchange="importData(event)">
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-let questions = JSON.parse(localStorage.getItem("mcqData")) || [];
-let currentQ=0, answers=[], timer, timeLeft=60, currentUser="";
+// ================== ডিফল্ট ডেটা ==================
+let defaultOptions=["ঢাকা","চট্টগ্রাম","খুলনা","সিলেট","পূর্ব","পশ্চিম","উত্তর","দক্ষিণ"];
+let defaultQuestions=[
+  {question:"বাংলাদেশের রাজধানী কোথায়?",options:["ঢাকা","চট্টগ্রাম","খুলনা","সিলেট"],answer:"ঢাকা",category:"বাংলাদেশ",streak:0},
+  {question:"সূর্য কোথায় উদয় হয়?",options:["পূর্ব","পশ্চিম","উত্তর","দক্ষিণ"],answer:"পূর্ব",category:"সাধারণ জ্ঞান",streak:0}
+];
 
-// Tab function
-function showTab(tab){
-  document.getElementById("examTab").style.display = (tab==='exam')?'block':'none';
-  document.getElementById("adminTab").style.display = (tab==='admin')?'block':'none';
+if(!localStorage.getItem("mcqData")) localStorage.setItem("mcqData", JSON.stringify(defaultQuestions));
+if(!localStorage.getItem("mcqOptions")) localStorage.setItem("mcqOptions", JSON.stringify(defaultOptions));
+
+let mcqData=JSON.parse(localStorage.getItem("mcqData"));
+let mcqOptions=JSON.parse(localStorage.getItem("mcqOptions"));
+let filteredData=[...mcqData];
+let currentIndex=-1, answered=false;
+
+// ================== UI ==================
+function showQuiz(){
+  document.getElementById("quizSection").style.display="block";
+  document.getElementById("adminPanel").style.display="none";
+  updateCategoryFilter();
+  nextQuestion();
+}
+function showAdmin(){
+  document.getElementById("quizSection").style.display="none";
+  document.getElementById("adminPanel").style.display="block";
+  renderAdmin();
+  updateWrongOptions();
+  renderOptionList();
+  updateCategoryFilter();
+}
+function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+// ================== Quiz ==================
+function nextQuestion(){
+  answered=false;
+  if(filteredData.length===0){
+    document.getElementById("question").innerText="কোনো প্রশ্ন নেই!";
+    document.querySelectorAll(".option-btn").forEach(b=>b.disabled=true);
+    return;
+  }
+  currentIndex=(currentIndex+1)%filteredData.length;
+  let q=filteredData[currentIndex];
+  document.getElementById("question").innerText=q.question;
+  let btns=document.querySelectorAll(".option-btn");
+  let finalOptions=shuffleArray([...q.options]);
+  btns.forEach((b,i)=>{ b.innerText=finalOptions[i]; b.disabled=false; });
+  document.getElementById("result").innerText="";
 }
 
-// Admin login
-function loginAdmin(){
-  const user=document.getElementById("adminUser").value.trim();
-  const pass=document.getElementById("adminPass").value;
-  if(user==='NA' && pass==='123456'){
-    document.getElementById("adminPanel").classList.remove("hidden");
-    alert("Admin logged in!");
-    loadQuestions();
-  } else { alert("Invalid credentials"); }
+function checkAnswer(btn){
+  if(answered){ document.getElementById("result").innerText="⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়"; return; }
+  answered=true;
+  let q=filteredData[currentIndex];
+  if(btn.innerText===q.answer){
+    q.streak++;
+    document.getElementById("result").innerHTML=`✅ <span style="color:green">সঠিক</span>`;
+    if(q.streak>=15){
+      mcqData.splice(mcqData.indexOf(q),1);
+      filteredData.splice(currentIndex,1);
+      currentIndex--;
+      alert("স্ট্রিক 15 পূর্ণ, প্রশ্ন ডিলিট হয়েছে");
+    }
+  }else{
+    q.streak=0;
+    document.getElementById("result").innerHTML=`❌ ভুল! সঠিক উত্তর: ${q.answer}`;
+  }
+  saveData(); renderAdmin();
 }
 
-// Admin functions
-function saveData(){ localStorage.setItem("mcqData",JSON.stringify(questions)); loadQuestions(); }
-function saveQuestion(){
-  const q=document.getElementById("question").value;
-  const opts=document.getElementById("options").value.split(",");
-  const ans=parseInt(document.getElementById("answer").value);
-  const editIndex=document.getElementById("editIndex").value;
-  if(!q||opts.length<2||isNaN(ans)){ alert("সব ফিল্ড পূরণ করুন!"); return; }
-  const newQ={q,options:opts,answer:ans};
-  if(editIndex!==""){ questions[editIndex]=newQ; document.getElementById("editIndex").value=""; }
-  else questions.push(newQ);
-  saveData(); clearForm();
+// ================== Option Management ==================
+function renderOptionList(){
+  let sel=document.getElementById("existingOptions");
+  sel.innerHTML="";
+  mcqOptions.forEach(opt=>{
+    let option = document.createElement("option");
+    option.value = opt; option.innerText = opt; sel.appendChild(option);
+  });
 }
-function clearForm(){ document.getElementById("question").value=""; document.getElementById("options").value=""; document.getElementById("answer").value=""; }
-function editQuestion(i){ const q=questions[i]; document.getElementById("question").value=q.q; document.getElementById("options").value=q.options.join(","); document.getElementById("answer").value=q.answer; document.getElementById("editIndex").value=i; }
-function deleteQuestion(i){ if(confirm("Delete?")){ questions.splice(i,1); saveData(); } }
-function loadQuestions(){ const list=document.getElementById("questionList"); list.innerHTML=""; questions.forEach((q,i)=>{ const div=document.createElement("div"); div.classList.add("question-card"); div.innerHTML=`<b>${i+1}. ${q.q}</b><br>Options: ${q.options.join(", ")}<br>Answer: ${q.options[q.answer]}<br>
-<button onclick="editQuestion(${i})">Edit</button> <button onclick="deleteQuestion(${i})">Delete</button>`; list.appendChild(div); }); }
-
-// Backup/Restore
-function exportData(){ const blob=new Blob([JSON.stringify(questions,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="mcq_backup.json"; a.click(); }
-function importData(e){ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=function(ev){ try{ questions=JSON.parse(ev.target.result); saveData(); alert("ডেটা ইমপোর্ট সফল!"); }catch(err){ alert("Invalid JSON file"); } }; reader.readAsText(file); }
-
-// Exam functions
-function startExamWithName(){
-  const name = document.getElementById("userName").value.trim();
-  if(!name){ alert("Name দিন"); return; }
-  currentUser = name;
-  document.getElementById("userPanel").classList.add("hidden");
-  document.getElementById("examPanel").classList.remove("hidden");
-  currentQ=0; answers=new Array(questions.length).fill(null);
-  timeLeft=questions.length*60;
-  loadExamQ(); startTimer();
+function addOption(){
+  let val = document.getElementById("optionText").value.trim();
+  if(val && !mcqOptions.includes(val)){
+    mcqOptions.push(val); saveOptions();
+    renderOptionList(); updateWrongOptions();
+    document.getElementById("optionText").value="";
+  }
 }
-function loadExamQ(){ const q=questions[currentQ]; let c=document.getElementById("examQuestion"); c.innerHTML=`<h4>${currentQ+1}. ${q.q}</h4>`; q.options.forEach((opt,i)=>{ c.innerHTML+=`<label class="option"><input type="radio" name="q${currentQ}" value="${i}" ${answers[currentQ]===i?'checked':''}> ${opt}</label>`; }); }
-function saveAnswer(){ let sel=document.querySelector(`input[name="q${currentQ}"]:checked`); if(sel) answers[currentQ]=parseInt(sel.value); }
-function nextQ(){ saveAnswer(); if(currentQ<questions.length-1){currentQ++; loadExamQ();} }
-function prevQ(){ saveAnswer(); if(currentQ>0){currentQ--; loadExamQ();} }
-function submitExam(){ saveAnswer(); clearInterval(timer); alert("Exam Submitted!"); }
-function startTimer(){ updateTimer(); timer=setInterval(()=>{ timeLeft--; updateTimer(); if(timeLeft<=0) submitExam(); },1000); }
-function updateTimer(){ let m=Math.floor(timeLeft/60); let s=timeLeft%60; document.getElementById("timer").innerText=`${m}:${s<10?'0'+s:s}`; }
+function deleteOption(){
+  let sel = document.getElementById("existingOptions"); let val = sel.value;
+  if(val){ mcqOptions = mcqOptions.filter(o=>o!==val); saveOptions(); renderOptionList(); updateWrongOptions(); }
+}
+function updateWrongOptions(){
+  let sel=document.getElementById("wrongOptions");
+  sel.innerHTML="";
+  mcqOptions.forEach(opt=>{
+    let option = document.createElement("option"); option.value = opt; option.innerText = opt; sel.appendChild(option);
+  });
+}
+
+// ================== Question Management ==================
+function addQuestion(){
+  let qText=document.getElementById("questionText").value.trim();
+  let cAnswer=document.getElementById("correctAnswer").value.trim();
+  let wrongOpts=Array.from(document.getElementById("wrongOptions").selectedOptions).map(o=>o.value);
+  let cat=document.getElementById("category").value.trim() || "সাধারণ";
+  if(!qText || !cAnswer || wrongOpts.length!==3){ alert("প্রশ্ন, সঠিক উত্তর এবং ৩টি ভুল অপশন দিতে হবে"); return; }
+  let options=[cAnswer,...wrongOpts];
+  let qObj={question:qText,options:options,answer:cAnswer,category:cat,streak:0};
+  mcqData.push(qObj); saveData(); renderAdmin(); applyFilter();
+  document.getElementById("questionText").value=""; document.getElementById("correctAnswer").value=""; document.getElementById("category").value="";
+}
+function renderAdmin(){
+  let tbody=document.querySelector("#questionsTable tbody"); tbody.innerHTML="";
+  mcqData.forEach((q,i)=>{
+    let tr=document.createElement("tr");
+    tr.innerHTML=`<td>${i+1}</td>
+                  <td>${q.question}</td>
+                  <td>${q.answer}</td>
+                  <td>${q.category}</td>
+                  <td>${q.streak}</td>
+                  <td><button class="btn btn-sm btn-danger" onclick="deleteQuestion(${i})">ডিলিট</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function deleteQuestion(idx){
+  if(confirm("মুছে ফেলতে চান?")){
+    mcqData.splice(idx,1); saveData(); renderAdmin(); applyFilter();
+  }
+}
+
+// ================== JSON ==================
+function toggleJson(){
+  let box=document.getElementById("jsonBox");
+  let view=document.getElementById("jsonView");
+  if(box.style.display==="none"){ view.value=JSON.stringify(mcqData,null,2); box.style.display="block"; }
+  else box.style.display="none";
+}
+function copyJson(){
+  document.getElementById("jsonView").select();
+  document.execCommand("copy");
+  alert("JSON কপি করা হয়েছে");
+}
+
+// ================== Filter ==================
+function updateCategoryFilter(){
+  let sel=document.getElementById("categoryFilter");
+  let cats=[...new Set(mcqData.map(q=>q.category))];
+  sel.innerHTML='<option value="">সব ক্যাটাগরি</option>';
+  cats.forEach(c=>{ let opt=document.createElement("option"); opt.value=c; opt.innerText=c; sel.appendChild(opt); });
+}
+function applyFilter(){
+  let cat=document.getElementById("categoryFilter").value;
+  filteredData = cat ? mcqData.filter(q=>q.category===cat) : [...mcqData];
+  currentIndex=-1; nextQuestion();
+}
+
+// ================== Save ==================
+function saveData(){ localStorage.setItem("mcqData",JSON.stringify(mcqData)); }
+function saveOptions(){ localStorage.setItem("mcqOptions",JSON.stringify(mcqOptions)); }
+
+// ================== Init ==================
+showQuiz();
 </script>
 </body>
 </html>
